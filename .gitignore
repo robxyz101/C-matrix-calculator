@@ -1,0 +1,16 @@
+*.o
+*.obj
+*.a
+*.so
+*.dll
+*.dylib
+
+*.exe
+
+matrix_calc
+
+.DS_Store
+Thumbs.db
+
+.vscode/
+.idea/
