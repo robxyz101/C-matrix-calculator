@@ -13,7 +13,7 @@ A command-line application written in C for matrix operations and solving linear
 
 - `matrix.h`: Header file containing the `TMatrix` struct definition and function prototypes.
 - `matrix.c`: Core implementation of the mathematical algorithms and memory management routines.
-- `main.c`: CLI loop, user input validation, and terminal output formatting.
+- `TheMatrix.c`: CLI loop, user input validation, and terminal output formatting.
 
 ## Build Instructions
 
