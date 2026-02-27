@@ -4,6 +4,6 @@ project(The_Matrix C)
 set(CMAKE_C_STANDARD 11)
 
 add_executable(The_Matrix
-        "main.c"
+        main.c
         matrix.h
         matrix.c)
