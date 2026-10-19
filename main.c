@@ -1,5 +1,14 @@
 #include "matrix.h"
 
+/* Prompts for a yes/no answer. Returns 1 only for 'Y' or 'y'. */
+static int confirm(const char *prompt) {
+    char c;
+
+    printf("%s [Y/N] ", prompt);
+    if (scanf(" %c", &c) != 1) return 0;
+    M_ClearInput();
+    return c == 'Y' || c == 'y';
+}
 
 int main(void) {
     int run = 1;
@@ -7,7 +16,6 @@ int main(void) {
     int nMat = 0;
     int choice = 0;
     int secChoice = 0;
-    char yn;
 
     TMatrix *mat = NULL;
     TMatrix res;
@@ -24,21 +32,22 @@ int main(void) {
     while (run) {
         printf("\n");
         printf("+++ [1] matrix input \n");
-        printf("+++ [2] matrix delete \n");
+        printf("+++ [2] delete all the matrices \n");
         printf("+++ [3] print all the matrices currently inserted \n");
         printf("+++ [4] sum two matrices \n");
         printf("+++ [5] multiply a matrix by a constant \n");
         printf("+++ [6] multiply two matrices\n");
         printf("+++ [7] transpose a matrix \n");
-        printf("+++ [8] reverse a matrix \n");
+        printf("+++ [8] invert a matrix \n");
         printf("+++ [9] Gauss elimination (and simultaneous equations solver)\n");
         printf("+++ [10] matrix determinant \n");
         printf("+++ [11] matrix rank \n");
+        printf("+++ [12] subtract two matrices \n");
         printf("+++ [other] stop the program\n");
 
         printf("\nInsert option: ");
         if (scanf("%d", &operation) != 1) {
-            while (getchar() != '\n') { } // clear buffer
+            M_ClearInput();
             printf("Invalid input. Exiting.\n");
             break;
         }
@@ -51,13 +60,13 @@ int main(void) {
                 printf("Insert the number of rows: ");
                 if (scanf("%d", &rows) != 1 || rows <= 0) {
                     printf("Insert a valid number of rows\n");
-                    while (getchar() != '\n') { }
+                    M_ClearInput();
                     break;
                 }
                 printf("Insert the number of columns: ");
                 if (scanf("%d", &cols) != 1 || cols <= 0) {
                     printf("Insert a valid number of columns\n");
-                    while (getchar() != '\n') { }
+                    M_ClearInput();
                     break;
                 }
 
@@ -69,7 +78,12 @@ int main(void) {
                 mat = tmp;
 
                 M_Create(&mat[nMat], rows, cols);
-                M_Insert(&mat[nMat]);
+                if (!M_Insert(&mat[nMat])) {
+                    M_Destroy(&mat[nMat]);
+                    printf("\nInput ended. Exiting.\n");
+                    run = 0;
+                    break;
+                }
                 M_Print(&mat[nMat]);
                 nMat++;
                 printf("\nReturn to main menu\n");
@@ -79,17 +93,13 @@ int main(void) {
             case 2:
                 if (nMat == 0) {
                     printf("No matrices have been inserted yet.\n");
-                } else {
-                    printf("Delete all the matrices? [Y/N] ");
-                    scanf(" %c", &yn);
-                    if (yn == 'Y' || yn == 'y') {
-                        for (int i = 0; i < nMat; i++)
-                            M_Destroy(&mat[i]);
-                        free(mat);
-                        mat = NULL;
-                        nMat = 0;
-                        printf("\nAll matrices have been deleted!\n");
-                    }
+                } else if (confirm("Delete all the matrices?")) {
+                    for (int i = 0; i < nMat; i++)
+                        M_Destroy(&mat[i]);
+                    free(mat);
+                    mat = NULL;
+                    nMat = 0;
+                    printf("\nAll matrices have been deleted!\n");
                 }
                 printf("\nReturn to main menu\n");
                 break;
@@ -109,9 +119,9 @@ int main(void) {
             case 4:
                 if (nMat < 2) { printf("At least two matrices required.\n"); break; }
                 printf("Matrix A: ");
-                if (scanf("%d", &choice) != 1) { while(getchar() != '\n') { } break; }
+                if (scanf("%d", &choice) != 1) { M_ClearInput(); break; }
                 printf("Matrix B: ");
-                if (scanf("%d", &secChoice) != 1) { while(getchar() != '\n') { } break; }
+                if (scanf("%d", &secChoice) != 1) { M_ClearInput(); break; }
 
                 if (choice < 1 || choice > nMat || secChoice < 1 || secChoice > nMat) {
                     printf("Invalid number.\n"); break;
@@ -129,10 +139,10 @@ int main(void) {
                 double k;
                 if (nMat == 0) { printf("No matrices available.\n"); break; }
                 printf("Matrix number: ");
-                if (scanf("%d", &choice) != 1) { while(getchar() != '\n') { } break; }
+                if (scanf("%d", &choice) != 1) { M_ClearInput(); break; }
                 if (choice < 1 || choice > nMat) { printf("Invalid number.\n"); break; }
                 printf("Constant: ");
-                if (scanf("%lf", &k) != 1) { while(getchar() != '\n') { } break; }
+                if (scanf("%lf", &k) != 1) { M_ClearInput(); break; }
                 M_ConstProd(&mat[choice-1], k);
                 M_Print(&mat[choice-1]);
                 break;
@@ -141,9 +151,9 @@ int main(void) {
             case 6:
                 if (nMat < 2) { printf("At least two matrices required.\n"); break; }
                 printf("Matrix A: ");
-                if (scanf("%d", &choice) != 1) { while(getchar() != '\n') { } break; }
+                if (scanf("%d", &choice) != 1) { M_ClearInput(); break; }
                 printf("Matrix B: ");
-                if (scanf("%d", &secChoice) != 1) { while(getchar() != '\n') { } break; }
+                if (scanf("%d", &secChoice) != 1) { M_ClearInput(); break; }
 
                 if (choice < 1 || choice > nMat || secChoice < 1 || secChoice > nMat) {
                     printf("Invalid number.\n"); break;
@@ -162,7 +172,7 @@ int main(void) {
                 printf("Matrix number: ");
 
                 if (scanf("%d", &choice) != 1) {
-                    while(getchar() != '\n') {}
+                    M_ClearInput();
                     break;
                 }
                 if (choice < 1 || choice > nMat) {
@@ -171,14 +181,11 @@ int main(void) {
                 }
 
                 M_Transpose(&mat[choice-1], &res);
-
                 M_Destroy(&mat[choice-1]);
-
                 mat[choice-1] = res;
 
                 printf("--- Matrix %d is now Transposed ---\n", choice);
                 M_Print(&mat[choice-1]);
-
                 break;
 
             case 8: {
@@ -186,7 +193,7 @@ int main(void) {
                 printf("Matrix number to invert: ");
 
                 if (scanf("%d", &choice) != 1) {
-                    while(getchar() != '\n') { }
+                    M_ClearInput();
                     break;
                 }
                 if (choice < 1 || choice > nMat) {
@@ -194,48 +201,39 @@ int main(void) {
                     break;
                 }
 
-
                 if (M_Inverse(&mat[choice-1], &res)) {
-
                     M_Destroy(&mat[choice-1]);
-
                     mat[choice-1] = res;
 
                     printf("--- Matrix %d is now Inverted ---\n", choice);
                     M_Print(&mat[choice-1]);
                 }
-
                 break;
             }
 
             case 9: {
-                int swaps_local = 0;
                 if (nMat == 0) { printf("No matrices available.\n"); break; }
                 printf("Matrix number: ");
 
-                if (scanf("%d", &choice) != 1) { while(getchar() != '\n') { } break; }
+                if (scanf("%d", &choice) != 1) { M_ClearInput(); break; }
                 if (choice < 1 || choice > nMat) { printf("Invalid number.\n"); break; }
 
                 TMatrix tmp;
                 M_Copy(&mat[choice-1], &tmp);
-
-                M_GaussElimination(&tmp, &swaps_local);
+                M_GaussElimination(&tmp, NULL);
                 M_Print(&tmp);
+                M_Destroy(&tmp);
 
-                printf("Solve the system? [Y/N] ");
-                scanf(" %c", &yn);
-                if (yn == 'Y' || yn == 'y') {
-                    double *sol = (double *)malloc(tmp.rows * sizeof(double));
-                    if (!sol) { printf("Allocation failed.\n"); M_Destroy(&tmp); break; }
-                    int res_val = M_SolveSystem(&tmp, sol);
-                    if (res_val == 1) {
+                if (confirm("Solve the system?")) {
+                    double *sol = (double *)malloc(mat[choice-1].rows * sizeof(double));
+                    if (!sol) { printf("Allocation failed.\n"); break; }
+                    if (M_SolveSystem(&mat[choice-1], sol) == 1) {
                         printf("Solution:\n");
-                        for (int i = 0; i < tmp.rows; i++)
+                        for (int i = 0; i < mat[choice-1].rows; i++)
                             printf("x%d = %g\n", i+1, sol[i]);
                     }
                     free(sol);
                 }
-                M_Destroy(&tmp);
                 break;
             }
 
@@ -243,7 +241,7 @@ int main(void) {
                 if (nMat == 0) { printf("No matrices available.\n"); break; }
                 printf("Matrix number: ");
 
-                if (scanf("%d", &choice) != 1) { while(getchar() != '\n') { } break; }
+                if (scanf("%d", &choice) != 1) { M_ClearInput(); break; }
                 if (choice < 1 || choice > nMat) { printf("Invalid number.\n"); break; }
                 if (mat[choice-1].rows != mat[choice-1].cols) {
                     printf("Determinant defined only for square matrices.\n"); break;
@@ -265,7 +263,7 @@ int main(void) {
                 printf("Matrix number to calculate rank: ");
 
                 if (scanf("%d", &choice) != 1) {
-                    while(getchar() != '\n') { }
+                    M_ClearInput();
                     break;
                 }
                 if (choice < 1 || choice > nMat) {
@@ -273,11 +271,28 @@ int main(void) {
                     break;
                 }
 
-                int rank = M_Rank(&mat[choice-1]);
-                printf("Rank = %d\n", rank);
-
+                printf("Rank = %d\n", M_Rank(&mat[choice-1]));
                 break;
             }
+
+            case 12:
+                if (nMat < 2) { printf("At least two matrices required.\n"); break; }
+                printf("Matrix A: ");
+                if (scanf("%d", &choice) != 1) { M_ClearInput(); break; }
+                printf("Matrix B: ");
+                if (scanf("%d", &secChoice) != 1) { M_ClearInput(); break; }
+
+                if (choice < 1 || choice > nMat || secChoice < 1 || secChoice > nMat) {
+                    printf("Invalid number.\n"); break;
+                }
+                if (mat[choice-1].rows != mat[secChoice-1].rows || mat[choice-1].cols != mat[secChoice-1].cols) {
+                    printf("Incompatible dimensions for subtraction.\n"); break;
+                }
+                M_MatSub(&mat[choice-1], &mat[secChoice-1], &res);
+                printf("--- A - B ---\n");
+                M_Print(&res);
+                M_Destroy(&res);
+                break;
 
             default:
                 run = 0;
